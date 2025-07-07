@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Prediction Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .result.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .result.warning {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #333;
+        }
+
+        .result.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+
+        .result h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .result p {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-box h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🫀 Heart Disease Prediction</h1>
+            <p>AI-powered health assessment chatbot</p>
+        </div>
+
+        <div class="content">
+            <div class="info-box">
+                <h4>How it works:</h4>
+                <p>Fill out the form below with your health information, and our AI model will assess your risk of heart disease. This is for educational purposes only and should not replace professional medical advice.</p>
+            </div>
+
+            <form method="post" action="/chat">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="age">Age (years)</label>
+                        <input type="number" id="age" name="age" min="18" max="120" value="{{ form_data.age if form_data else '' }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sex">Sex</label>
+                        <select id="sex" name="sex" required>
+                            <option value="">Select...</option>
+                            <option value="Male" {{ 'selected' if form_data and form_data.sex == 'Male' else '' }}>Male</option>
+                            <option value="Female" {{ 'selected' if form_data and form_data.sex == 'Female' else '' }}>Female</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="chest_pain_type">Chest Pain Type</label>
+                        <select id="chest_pain_type" name="chest_pain_type" required>
+                            <option value="">Select...</option>
+                            <option value="ATA" {{ 'selected' if form_data and form_data.chest_pain_type == 'ATA' else '' }}>Atypical Angina</option>
+                            <option value="NAP" {{ 'selected' if form_data and form_data.chest_pain_type == 'NAP' else '' }}>Non-Anginal Pain</option>
+                            <option value="ASY" {{ 'selected' if form_data and form_data.chest_pain_type == 'ASY' else '' }}>Asymptomatic</option>
+                            <option value="TA" {{ 'selected' if form_data and form_data.chest_pain_type == 'TA' else '' }}>Typical Angina</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="resting_bp">Resting Blood Pressure (mmHg)</label>
+                        <input type="number" id="resting_bp" name="resting_bp" min="80" max="200" value="{{ form_data.resting_bp if form_data else '' }}" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cholesterol">Cholesterol (mg/dl)</label>
+                        <input type="number" id="cholesterol" name="cholesterol" min="100" max="600" step="0.1" value="{{ form_data.cholesterol if form_data else '' }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fasting_bs">Fasting Blood Sugar > 120 mg/dl</label>
+                        <select id="fasting_bs" name="fasting_bs" required>
+                            <option value="">Select...</option>
+                            <option value="0" {{ 'selected' if form_data and form_data.fasting_bs == 0 else '' }}>No</option>
+                            <option value="1" {{ 'selected' if form_data and form_data.fasting_bs == 1 else '' }}>Yes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="resting_ecg">Resting ECG</label>
+                        <select id="resting_ecg" name="resting_ecg" required>
+                            <option value="">Select...</option>
+                            <option value="Normal" {{ 'selected' if form_data and form_data.resting_ecg == 'Normal' else '' }}>Normal</option>
+                            <option value="ST" {{ 'selected' if form_data and form_data.resting_ecg == 'ST' else '' }}>ST-T Wave Abnormality</option>
+                            <option value="LVH" {{ 'selected' if form_data and form_data.resting_ecg == 'LVH' else '' }}>Left Ventricular Hypertrophy</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="max_hr">Maximum Heart Rate</label>
+                        <input type="number" id="max_hr" name="max_hr" min="60" max="220" value="{{ form_data.max_hr if form_data else '' }}" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="exercise_angina">Exercise Induced Angina</label>
+                        <select id="exercise_angina" name="exercise_angina" required>
+                            <option value="">Select...</option>
+                            <option value="No" {{ 'selected' if form_data and form_data.exercise_angina == 'No' else '' }}>No</option>
+                            <option value="Yes" {{ 'selected' if form_data and form_data.exercise_angina == 'Yes' else '' }}>Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="oldpeak">ST Depression (Oldpeak)</label>
+                        <input type="number" id="oldpeak" name="oldpeak" min="0" max="10" step="0.1" value="{{ form_data.oldpeak if form_data else '' }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="st_slope">ST Slope</label>
+                    <select id="st_slope" name="st_slope" required>
+                        <option value="">Select...</option>
+                        <option value="Up" {{ 'selected' if form_data and form_data.st_slope == 'Up' else '' }}>Upsloping</option>
+                        <option value="Flat" {{ 'selected' if form_data and form_data.st_slope == 'Flat' else '' }}>Flat</option>
+                        <option value="Down" {{ 'selected' if form_data and form_data.st_slope == 'Down' else '' }}>Downsloping</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">🔍 Predict Heart Disease Risk</button>
+            </form>
+
+            {% if result %}
+            <div class="result {{ 'success' if result.risk_level == 'Low' else 'warning' if result.risk_level == 'Moderate' else 'danger' }}">
+                <h3>{{ result.message }}</h3>
+                <p><strong>Risk Level:</strong> {{ result.risk_level }}</p>
+                <p><strong>Risk Probability:</strong> {{ result.risk_probability }}%</p>
+                {% if result.risk_level == 'High' %}
+                <p><em>⚠️ Please consult with a healthcare professional for proper evaluation.</em></p>
+                {% elif result.risk_level == 'Moderate' %}
+                <p><em>⚠️ Consider lifestyle changes and regular checkups.</em></p>
+                {% else %}
+                <p><em>✅ Keep maintaining a healthy lifestyle!</em></p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div class="error">
+                <strong>Error:</strong> {{ error }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
