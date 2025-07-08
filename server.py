@@ -77,10 +77,42 @@ async def predict_heart_disease(data: HeartData):
         }])
         
         # Apply same preprocessing as training
-        # 1. Convert categorical variables to category type
-        categorical_cols = ['Sex', 'ChestPainType', 'RestingECG', 'ExerciseAngina', 'ST_Slope']
-        for col in categorical_cols:
-            input_data[col] = input_data[col].astype('category')
+        # 1. Ensure categorical values match training data exactly
+        # Map and validate categorical values
+        categorical_mappings = {
+            'Sex': {'MALE': 'Male', 'FEMALE': 'Female'},
+            'ChestPainType': {'ATA': 'ATA', 'NAP': 'NAP', 'ASY': 'ASY', 'TA': 'TA'},
+            'RestingECG': {'NORMAL': 'NORMAL', 'ST': 'ST', 'LVH': 'LVH'},
+            'ExerciseAngina': {'YES': 'Yes', 'NO': 'No'},
+            'ST_Slope': {'UP': 'UP', 'FLAT': 'FLAT', 'DOWN': 'DOWN'}
+        }
+        
+        # Validate and map categorical values
+        for col, valid_values in categorical_mappings.items():
+            current_value = input_data[col].iloc[0]
+            if current_value in valid_values:
+                input_data[col] = valid_values[current_value]
+            else:
+                # If invalid, map to most common value
+                if col == 'Sex':
+                    input_data[col] = 'Male'
+                elif col == 'ChestPainType':
+                    input_data[col] = 'ASY'  # Most common in training
+                elif col == 'RestingECG':
+                    input_data[col] = 'NORMAL'  # Most common in training
+                elif col == 'ExerciseAngina':
+                    input_data[col] = 'No'
+                elif col == 'ST_Slope':
+                    input_data[col] = 'FLAT'  # Most common in training
+                
+                print(f"Warning: Invalid value '{current_value}' for {col}, using default")
+        
+        # Convert to category type with exact categories from training
+        input_data['Sex'] = input_data['Sex'].astype('category').cat.set_categories(['Female', 'Male'])
+        input_data['ChestPainType'] = input_data['ChestPainType'].astype('category').cat.set_categories(['ASY', 'ATA', 'NAP', 'TA'])
+        input_data['RestingECG'] = input_data['RestingECG'].astype('category').cat.set_categories(['LVH', 'NORMAL', 'ST'])
+        input_data['ExerciseAngina'] = input_data['ExerciseAngina'].astype('category').cat.set_categories(['No', 'Yes'])
+        input_data['ST_Slope'] = input_data['ST_Slope'].astype('category').cat.set_categories(['DOWN', 'FLAT', 'UP'])
         
         # 2. Feature engineering (same as training)
         input_data['Age_MaxHR_Ratio'] = input_data['Age'] / input_data['MaxHR']

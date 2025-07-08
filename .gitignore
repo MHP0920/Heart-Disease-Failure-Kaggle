@@ -4,3 +4,4 @@
 __pycache__/
 *.pyc
 Heart_Disease_Prediction_Report.py
+preprocessing_info.json
